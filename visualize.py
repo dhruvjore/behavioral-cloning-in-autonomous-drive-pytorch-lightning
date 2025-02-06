@@ -1,33 +1,40 @@
-import torch
-from datamodule import DataModule
+import torch  
+from datamodule import DataModule  # Import custom DataModule for handling data loading  
 
-import matplotlib.pyplot as plt
-import seaborn as sns
+import matplotlib.pyplot as plt  
+import seaborn as sns  
+import numpy as np  
 
-import numpy as np
+# Initialize the DataModule, which handles dataset preparation and loading  
+dm = DataModule()  
+dm.prepare_data()  # Download or process data if needed  
+dm.setup()  # Set up training, validation, and test datasets  
 
+# Get the training dataloader to fetch batches of data  
+train_dataloader = dm.train_dataloader()  
 
-dm = DataModule()
-dm.prepare_data()
-dm.setup()
+# Fix potential "too many open files" error in PyTorch multiprocessing  
+torch.multiprocessing.set_sharing_strategy('file_system')  
 
-train_dataloader = dm.train_dataloader()
+# Initialize an empty list to store steering angles from the dataset  
+steering_angles = []  
 
-# fix too many files open torch error
-torch.multiprocessing.set_sharing_strategy('file_system')
+# Iterate over batches of images and steering angles from the training data  
+for batch_idx, (image, steering_angle) in enumerate(train_dataloader):  
+    steering_angles.append(steering_angle)  # Collect steering angles  
 
-# extract steering angles from dataset
-steering_angles = []
-for batch_idx, (image, steering_angle) in enumerate(train_dataloader):
-    steering_angles.append(steering_angle)
+# Set the visualization theme and ensure reproducibility  
+sns.set_theme(); np.random.seed(0)  
 
-# plot their distribution
-sns.set_theme(); np.random.seed(0)
-steering_angles = np.array(steering_angles)
-ax = sns.histplot(steering_angles)
+# Convert collected steering angles to a NumPy array for easy manipulation  
+steering_angles = np.array(steering_angles)  
 
-plt.xlabel("steering angle")  
-plt.ylabel("count")  
-plt.show()
+# Plot a histogram to visualize the distribution of steering angles  
+ax = sns.histplot(steering_angles)  
 
+# Label the axes for better readability  
+plt.xlabel("Steering Angle")  
+plt.ylabel("Count")  
 
+# Display the plot  
+plt.show()  
